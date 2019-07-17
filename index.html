@@ -183,8 +183,214 @@
         // }
       // }
     }
-
   }
+
+  class Robot {
+    constructor() {
+      this.history = new Array(0);
+      this.grabbed = null;
+      this.anchor = document.createElement('a')
+      this.input = document.createElement('input')
+      this.input.setAttribute('type', 'file')
+      this.input.setAttribute('multiple', '')
+
+      this.input.addEventListener('input', files => this.parseFiles());
+
+      this.sceneEntities = new Array(0);
+      this.filesAsJSON = new Array(0);
+
+      this.target = {
+        x: 0,
+        y: 1,
+        z:-2
+      }
+
+      window.addEventListener('DOMContentLoaded', e => {
+        document.body.append(this.anchor)
+        document.body.append(this.input)
+        this.sceneEl = document.querySelector('a-scene')
+        document.querySelector('body').ondragover = e => {
+          e.preventDefault();
+        };
+        document.querySelector('body').ondrop = e => {
+          console.log(e)
+          e.preventDefault();
+          if (e.dataTransfer.items) {
+            // Use DataTransferItemList interface to access the file(s)
+            console.log('marco')
+            for (var i = 0; i < e.dataTransfer.items.length; i++) {
+              // If dropped items aren't files, reject them
+              if (e.dataTransfer.items[i].kind === 'file') {
+                var file = e.dataTransfer.items[i].getAsFile();
+                this.parseDroppedFile(file)
+                // console.log('... file[' + i + '].name = ' + file.name);
+              }
+            }
+          } else {
+            // Use DataTransfer interface to access the file(s)
+            console.log('polo')
+            // for (var i = 0; i < e.dataTransfer.files.length; i++) {
+            //   console.log('... file[' + i + '].name = ' + e.dataTransfer.files[i].name);
+            // }
+          }
+        };
+      });
+      document.addEventListener('ybuttondown', e => {
+        this.askUserForFiles();
+      });
+      document.addEventListener('xbuttondown', e => {
+        this.rumFromParsedFiles('test');
+      });
+
+      this.dinger = document.createElement('audio')
+      this.dinger.src = '../../sine-432hz-pluck.flac';
+
+    };
+    askForFiles() {
+      this.input.click();
+    }
+    parseDroppedFile(file) {
+      if(file.type.includes('image/')) {
+        let reader = new FileReader();
+        reader.onload = (e) => {
+          let parsedFile = {
+            dataURL: reader.result,
+            position: `${this.target.x++} ${this.target.y} ${this.target.z}`,
+          }
+          this.rumBlobToEntity(parsedFile);
+        }
+        reader.readAsDataURL(file); 
+      }
+    }
+    parseFiles() {
+      this.parsedFiles = new Array(this.input.files.length)
+      let files = this.input.files;
+      if(files.length === 1 && files[0].name.includes('.rum')) {
+        this.parseRum(files[0]);
+      } else {
+        for(let i = 0; i < this.input.files.length; i++) {
+          let file = this.input.files[i];
+          if(file.type.includes('image/')) {
+            let reader = new FileReader();
+            let idx = i;
+            reader.onload = (e) => {
+              let parsedFile = this.parsedFiles[idx] = {
+                dataURL: reader.result,
+                position: `${i} 1 -2`,
+              }
+              this.rumBlobToEntity(parsedFile);
+            }
+            reader.readAsDataURL(file); 
+          }
+        }
+      }
+    };
+    parseRum(rumFile) {
+      if(rumFile.name.includes('.rum')) {
+        let reader = new FileReader();
+        reader.onload = (e) => {
+          this.parsedFiles = JSON.parse(reader.result);
+          this.renderParsedFiles();
+        }
+        reader.readAsText(rumFile); 
+      }
+    };
+    rumFromParsedFiles(name) {
+      let file = new File([JSON.stringify(this.parsedFiles)], `${name}.rum`);
+      this.downloadFile(file)
+    };
+    downloadFile(file) {
+      let a = URL.createObjectURL(file)//<-- REMEMBER TO GARBAGE COLLECT THIS ???
+      this.anchor.href = a;
+      this.anchor.download = file.name
+      this.anchor.click()
+    };
+    rumToParsedFiles(rumFile) {
+      // load a .rum file onto parsedFiles 
+      let file = rumFile;
+
+      let reader = new FileReader();
+      reader.onload = (e) => {
+        this.parsedFiles = JSON.parse(reader.result)
+      }
+      reader.readAsDataURL(file); 
+    };
+    say(wut) {
+      let timestamp = Date.now();
+      console.log(wut);
+      this.history.push({
+        timestamp: timestamp,
+        action: "say",
+        params: wut,
+      })
+    };
+    grab(wut) {
+      return this.grabbed = document.querySelector(wut) || null;
+    };
+    z(a) {
+      window.console.log('console logging')
+    };
+    renderParsedFiles() {
+      for(let i = 0; i < this.parsedFiles.length; i++) {
+        this.rumBlobToEntity(this.parsedFiles[i]);
+      }
+    }
+    rumBlobToEntity(rumBlob) {
+      let entity = document.createElement('a-image')
+      entity.setAttribute('src', rumBlob.dataURL)
+      entity.setAttribute('position', rumBlob.position)
+      this.sceneEntities.push(entity)
+      document.querySelector('a-scene').appendChild(entity)
+    };
+    fromBase64() {
+
+    };
+    toBase64() {
+
+    };
+    saveRum(name) {
+
+
+    };
+    // renderInputFiles
+    // https://stackoverflow.com/questions/7951326/save-image-to-users-disk-using-javascript
+    toGLTF(wut) {
+      // TODO: REMOVE THIS, and remove the exporter js file
+      // https://threejs.org/docs/#examples/en/exporters/GLTFExporter
+      // Instantiate a exporter (worth instantiating on each export?)
+      var exporter = new THREE.GLTFExporter();
+      var options = undefined
+
+      let callback = thing => window.z = thing
+      // Parse the input and generate the glTF output
+      exporter.parse( wut, callback, options );
+      // exporter.parse( wut, function ( gltf ) {
+      //   console.log( gltf );
+      //   console.log('parse that thins!')
+      //   downloadJSON( gltf );
+      // }, options );
+    };
+    replay() {
+      var offset = undefined;
+      if(this.history.length > 0) {
+        offset = Date.now() - this.history[0].timestamp;
+      }
+      while(this.history.length > 0) {
+        let action = this.history.shift();
+        let now = Date.now();
+        let when = now - action.timestamp;
+        setTimeout(() => { this[action.action](action.params); }, when - offset);
+      }
+    };
+    ding() {
+      if (this.dinger.paused) {
+        this.dinger.play();
+      } else {
+        this.dinger.currentTime = 0;
+      }
+    }
+  }
+  window.bot = new Robot()
   }</script>
 
 </html>
