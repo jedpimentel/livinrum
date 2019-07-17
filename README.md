@@ -1,2 +1,2 @@
 # livinrum
-https://www.livinrum.com
+www.livinrum.com
