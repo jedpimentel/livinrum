@@ -4,11 +4,27 @@
   <head>
       <title>LIVINRUM</title>
       <script src="https://aframe.io/releases/0.9.2/aframe.min.js"></script>
+      <style type="text/css">
+        button {
+          z-index: 2147483647;
+        }
+        a-scene {
+          /*z-index: -1;*/
+          height: 90vh;
+          width: 90vw;
+          border: 1px solid white;
+        }
+        #main {
+          display: inline-block;
+        }
+      </style>
   </head>
   <body style="font-family:courier; color:white; background-color: black">
 
-    <section id="main"></section>
-    <a-scene ar id="scene">
+    <section id="main">
+      <button id="download-button">DOWNLOAD</button>
+    </section>
+    <a-scene ar embedded id="scene" vr-mode-ui="enabled: false">
 
       <!-- <a-entity position="8.2 0 4.9" rotation="0 48 0"> -->
       <a-entity>
@@ -205,6 +221,8 @@
         z:-2
       }
 
+      this.parsedFiles = [];
+
       window.addEventListener('DOMContentLoaded', e => {
         document.body.append(this.anchor)
         document.body.append(this.input)
@@ -250,19 +268,27 @@
       this.input.click();
     }
     parseDroppedFile(file) {
+      console.log('dropped a file')
       if(file.type.includes('image/')) {
+        // this.input.files.push(file)
         let reader = new FileReader();
         reader.onload = (e) => {
           let parsedFile = {
             dataURL: reader.result,
             position: `${this.target.x++} ${this.target.y} ${this.target.z}`,
           }
+          this.parsedFiles.push(parsedFile);
           this.rumBlobToEntity(parsedFile);
         }
         reader.readAsDataURL(file); 
+      } else {
+        // assume it's a scene blob
+        this.parseRum(file);
       }
     }
+    // FILE INPUT PARSER
     parseFiles() {
+      console.log('parsing files')
       this.parsedFiles = new Array(this.input.files.length)
       let files = this.input.files;
       if(files.length === 1 && files[0].name.includes('.rum')) {
@@ -276,7 +302,7 @@
             reader.onload = (e) => {
               let parsedFile = this.parsedFiles[idx] = {
                 dataURL: reader.result,
-                position: `${i} 1 -2`,
+                position: `${this.target.x++} ${this.target.y} ${this.target.z}`,
               }
               this.rumBlobToEntity(parsedFile);
             }
@@ -391,6 +417,9 @@
     }
   }
   window.bot = new Robot()
+
+      const button = document.querySelector('#download-button')
+      button.onclick = () => window.bot.rumFromParsedFiles();
   }</script>
 
 </html>
