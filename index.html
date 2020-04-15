@@ -3,8 +3,10 @@
 <html>
   <head>
       <title>LIVINRUM</title>
-      <script src="https://aframe.io/releases/0.9.2/aframe.min.js"></script>
+      <!-- <script src="https://aframe.io/releases/0.9.2/aframe.min.js"></script> -->
+      <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
       <link rel="stylesheet" type="text/css" href="style.css">
+      <!-- <link rel="stylesheet" type="text/css" href="style.css"> -->
       <style type="text/css">
       </style>
   </head>
@@ -12,20 +14,24 @@
 
     <section id="main">
       <button id="download-button">DOWNLOAD</button>
+      upload images:
+      <input id="file-input" type="file" multiple name="">
     </section>
-    <a-scene ar embedded id="scene" vr-mode-ui="enabled: false">
 
+    <a-scene ar embedded id="scene" vr-mode-ui="enabled: false">
       <a-entity>
         <a-camera look-controls="pointerLockEnabled: false" wasd-controls></a-camera>
         <a-entity cursor="rayOrigin: mouse" raycaster="objects:.clickable"></a-entity>
       </a-entity>
-
       <a-image src="livinrum.jpg" position="0 0 -1000" height="1609.34" width="1609.34"></a-image>
-      <a-entity id="blob" position='5 0 10' rotation="0 -90 0"></a-entity>
-      
+      <a-image src="flyer.png" position="-1 1.5 0" rotation="0 90 0"></a-image>
+      <a-entity id="image-strip" position='-2 1.6 -2'></a-entity>
+      <a-entity id="environment-element" position='5 0 10' rotation="0 -90 0"></a-entity>
     </a-scene>
 
-    <script type="text/javascript" src="script.js"></script>
+    <!-- <script type="text/javascript" src="script.js"></script> -->
+    <script type="text/javascript" src="lib/composition-handler.js"></script>
+    <script type="text/javascript" src="lib/environment-generator.js"></script>
   </body>
 
 

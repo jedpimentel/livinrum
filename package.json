@@ -1,0 +1,31 @@
+{
+  "name": "livinrum",
+  "version": "0.1.0",
+  "description": "A-Frame image gallery app",
+  "main": "app.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jedpimentel/livinrum.git"
+  },
+  "keywords": [
+    "AFrame",
+    "JSON"
+  ],
+  "author": "Jose Pimentel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jedpimentel/livinrum/issues"
+  },
+  "homepage": "https://github.com/jedpimentel/livinrum#readme",
+  "dependencies": {
+    "live-server": "^1.2.1"
+  },
+  "devDependencies": {}
+}

@@ -6,3 +6,6 @@ a-scene {
 #main {
   display: inline-block;
 }
+#download-button {
+	margin-right: 7em;
+}
