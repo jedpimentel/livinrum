@@ -1,0 +1,8 @@
+a-scene {
+  height: 90vh;
+  width: 100%;
+  border: 1px solid white;
+}
+#main {
+  display: inline-block;
+}
