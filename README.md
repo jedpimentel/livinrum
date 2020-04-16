@@ -1,9 +1,10 @@
 # livinrum
 
 A way to make JSON-based digital image galleries.
+
 [[ EXPLANATION VIDEO ]](https://youtu.be/LxeEeW8aK1I)
 
-Setup
+## Setup
 To clone and run this repository you'll need Git and Node.js (which comes with npm) installed on your computer. From your command line:
 ```
 git clone https://github.com/jedpimentel/livinrum.git
