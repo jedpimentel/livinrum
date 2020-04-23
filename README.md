@@ -19,7 +19,6 @@ Alternatively, you can try out a live version here: *[www.livinrum.com](https://
   * Refresh your page, or keep adding images
   * Drop the ".rum" file onto the browser window to restore that scene
 
-
 ### Hosting a default .rum file
   
   * Rename .rum file as "livin.rum" and place in livinrum/default
