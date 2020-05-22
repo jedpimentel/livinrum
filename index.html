@@ -1,11 +1,36 @@
 <!DOCTYPE html> 
 <html>
   <head>
-      <title>LIVINRUM</title>
-      <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
-      <link rel="stylesheet" type="text/css" href="style.css">
-      <style type="text/css">
-      </style>
+    <title>LIVINRUM</title>
+    <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <style type="text/css"></style>
+
+    <!-- https://github.com/mayognaise/aframe-gif-shader -->
+    <script src="https://rawgit.com/mayognaise/aframe-gif-shader/master/dist/aframe-gif-shader.min.js"></script>
+    <!-- gif fixer: -->
+    <!-- link to pull request that hasn't been merged -->
+    <!-- https://github.com/mayognaise/aframe-gif-shader/pull/15 -->
+    <script type="text/javascript">
+      AFRAME.registerComponent('gif-fixer', {
+        tock: function () {
+          // patch gif logic on first tock so shader is already loaded
+          this.fix();
+          this.tock = function () {};
+        },
+        fix: function () {
+          const shader = this.el.components.material.shader
+          const existingLogic = shader.nextFrame
+          const newVer = aaa => {
+            // canvas was not being cleared between gif frames
+            shader.__clearCanvas();
+            existingLogic.apply(this.el.components.material.shader)
+          }
+          shader.nextFrame = newVer;
+        }
+      })
+    </script>
+
   </head>
   <body style="font-family:courier; color:white; background-color: black">
 
@@ -15,12 +40,19 @@
       <input id="file-input" type="file" multiple name="">
     </section>
 
-    <a-scene ar embedded id="scene" vr-mode-ui="enabled: false">
+    <a-scene ar embedded id="scene" vr-mode-ui="enabled: true">
+
+      <a-assets>
+        <img id="fire" src="fire.gif">
+      </a-assets>
+
       <a-entity>
         <a-camera look-controls="pointerLockEnabled: false" wasd-controls></a-camera>
         <a-entity cursor="rayOrigin: mouse" raycaster="objects:.clickable"></a-entity>
       </a-entity>
       <a-image src="livinrum.jpg" position="0 0 -1000" height="1609.34" width="1609.34"></a-image>
+      <a-box id='test' gif-fixer material="shader:gif;src:url(fire.gif);" transparent="true" position="-4 1.6 19"></a-box>
+
       <a-image src="flyer.png" position="-1 1.5 0" rotation="0 90 0"></a-image>
       <a-entity id="image-strip" position='-1 1.6 -2'></a-entity>
       <a-entity id="environment-element" position='5 0 10' rotation="0 -90 0"></a-entity>
