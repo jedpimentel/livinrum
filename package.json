@@ -25,7 +25,8 @@
   },
   "homepage": "https://github.com/jedpimentel/livinrum#readme",
   "dependencies": {
-    "live-server": "^1.2.1"
+    "live-server": "^1.2.1",
+    "ws": "^7.3.0"
   },
   "devDependencies": {
     "eslint": "^6.8.0",
