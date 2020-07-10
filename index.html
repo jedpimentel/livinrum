@@ -29,6 +29,18 @@
           shader.nextFrame = newVer;
         }
       })
+
+      // // experimental
+      // // sends positional data to websocket, leading 
+      // // is tick better, or tock better?
+      // AFRAME.registerComponent('tracked-head', {
+
+      //   tick: function () {
+      //     // update location of non-local networked entities
+      //   },
+      // })
+
+      // AFRAME.registerComponent('websocket-receiver',)
     </script>
 
   </head>
@@ -51,7 +63,7 @@
         <a-camera look-controls="pointerLockEnabled: false" wasd-controls></a-camera>
         <a-entity cursor="rayOrigin: mouse" raycaster="objects:.clickable"></a-entity>
       </a-entity>
-      <a-image src="livinrum.jpg" position="0 0 -1000" height="1609.34" width="1609.34"></a-image>
+      <a-image src="livinrum.jpg" opacity="0.5" position="0 0 -1000" height="1609.34" width="1609.34"></a-image>
       <a-box id='test' gif-fixer material="shader:gif;src:url(fire.gif);" transparent="true" position="-4 1.6 19"></a-box>
 
       <a-image src="flyer.png" position="-1 1.5 0" rotation="0 90 0"></a-image>
@@ -61,5 +73,121 @@
 
     <script type="text/javascript" src="lib/composition-handler.js"></script>
     <script type="module" src="lib/environment-generator.js"></script>
+
+
+    <script type="text/javascript">
+      
+      // var socket = new WebSocket('ws://localhost:8082/');//TOFO: use server IP (programmatically)
+      // var socket = new WebSocket(`ws://${location.hostname}:8082/`);//TODO: use server IP (programmatically)
+      const socket = new WebSocket(`ws://localhost:8082/`);//TODO: use server IP (programmatically)
+
+      socket.onerror = function(error) {
+        console.log('WebSocket Error: ', error);
+      };
+      socket.onopen = function(event) {
+        console.log('opened socket')
+        console.log('Connected to: ' + event.currentTarget.url);
+
+
+        const camera = document.querySelector("a-camera");
+
+        // debugger
+        
+        // IMPORTANT: ids are pseudo-unique,
+        // backend should handle IDs versus using random throws
+        const self_id = BigInt(Math.floor(Number.MAX_SAFE_INTEGER * Math.random()));
+
+        // [id (uint), timestamp(uint), posx(float64), posy, posz, rotx(float64), roty, rotz]
+        // 8 8-byte values
+        const buffer = new ArrayBuffer(8*8*8);
+        const uint64Buffer = new BigUint64Array(buffer, 0, 8*2);
+        const float64Buffer = new Float64Array(buffer, 8*2, 8*6);
+
+        uint64Buffer[0] = self_id;
+
+        setInterval(() => {
+
+
+
+          float64Buffer[0] = camera.object3D.position.x;
+          float64Buffer[1] = camera.object3D.position.y;
+          float64Buffer[2] = camera.object3D.position.z;
+          float64Buffer[3] = camera.object3D.rotation.x;
+          float64Buffer[4] = camera.object3D.rotation.y;
+          float64Buffer[5] = camera.object3D.rotation.z;
+
+          // const pos = camera.object3D.position;
+          // const rot = camera.object3D.rotation;
+
+          socket.send(buffer)
+
+          // socket.send(id)
+
+        }, 1000/1)
+        
+        // document.querySelector("#ping").onclick = () => {
+        //   socket.send('ping')
+        // }
+
+
+        // const msg = document.querySelector('#message');
+        // document.querySelector("#message-form").addEventListener("submit", event => {
+        //   socket.send(socket.send);
+        //   msg.value = "";
+        // })
+
+      }
+
+
+      // const buffer = new ArrayBuffer(8*8*8);
+      // const uint64Buffer = new BigUint64Array(buffer, 0, 8*2);
+      // const float64Buffer = new Float64Array(buffer, 8*2, 8*6);
+      // Handle messages sent by the server.
+      const networked_entities = new Map()
+      const entity_wrapper = document.querySelector('a-scene')
+
+      socket.binaryType = 'arraybuffer';
+      socket.onmessage = function(event) {
+        // console.log(event)
+        // return
+        const data = event.data
+        console.log(data)
+
+
+        // TODO: is performance impact of re-initializing thi every message?
+        const uint64Buffer = new BigUint64Array(data, 0, 8*2);
+        const float64Buffer = new Float64Array(data, 8*2, 8*6);
+
+        const entity_number = uint64Buffer[0];
+        // if (entity_number === self_id) return;// this is an echo/pong message... do something with these?
+        if (!networked_entities.has(entity_number)) {
+          console.log('aaaaaa', entity_number)
+          const box = document.createElement("a-box"); 
+          entity_wrapper.appendChild(box)
+          networked_entities.set(entity_number, box)
+        }
+
+
+        // const entity_timestamp = uint64Buffer[1];
+        const posX = float64Buffer[0];
+        // const posY = float64Buffer[1];
+        // const posZ = float64Buffer[2] -2;
+        // const rotX = float64Buffer[3];
+        // const rotY = float64Buffer[4];
+        // const rotZ = float64Buffer[5];
+
+        const box = networked_entities.get(entity_number)
+        box.object3D.position.x = posX;
+        // box.object3D.position.y = posY;
+        // box.object3D.position.z = posZ;
+        window.box = box
+
+        // console.log('message', event)
+      };
+      // Show a disconnected message when the WebSocket is closed.
+      socket.onclose = function(event) {
+        console.log('close', event)
+      };
+    </script>
   </body>
 </html>
